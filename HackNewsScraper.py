@@ -1,7 +1,15 @@
+# webscrapernews.py
+# Data Scraper: Hacker News Y-Combinator
+# Organizing Hacker News YC news by: 1) Title 2) Title link 3) 100+ community votes
+
+
+#importing libraries to: request access to page; scrape data; organize results
 import requests
 from bs4 import BeautifulSoup
 import pprint
 
+
+# request access to pages; obtaining read only text, links to titles, and number of votes
 res = requests.get('https://news.ycombinator.com/')
 res2 = requests.get('https://news.ycombinator.com/?p=2')
 soup = BeautifulSoup(res.text, 'html.parser')
@@ -11,43 +19,33 @@ links2 = soup2.select('.titleline > a')
 subtext = soup.select('.subtext')
 subtext2 = soup2.select('.subtext')
 
-# adding 2nd page to scrape
-
+# linking page 1 and page 2 search results
 mega_links = links + links2
 mega_subtext = subtext + subtext2
-# Step 1 - get data
-# get request -> HTML files from site as a string
-# res.text -> get all the data (unfiltered)
-# beautifulsoup used to parse(turn from string to a soup object -> manipulate/use)
-# -> can pull from any HTML section of text (ex. body, content, div, a (a-tags = links), etc)
-# Use cases: find_all, select
-# Need CSS selectors to get data (.select - to pull from nested data)
-# -> Get CLASS of titleline links + scores/votes.
-# subtext used bc some don't have votes (don't have CLASS='score')
 
+
+# sorting hnlist from high to low(reverse). Sorting w/ key 'votes'
 def sort_stories_by_votes(hnlist):
     return sorted(hnlist, key= lambda k:k['votes'], reverse=True)
 
-# sorting hnlist from high to low(reverse). Sorting w/ key 'votes'
-
+# create list for data scrape results
 def create_custom_hn(links, subtext):
     hn = []
+    
+    # Loop through index of title, link, votes
     for idx, item in enumerate(links):
         title = item.getText()
         href = item.get('href', None)
         vote = subtext[idx].select('.score')
+        
+        # obtain numerical value only of votes; if >99 votes -> append to hn list
         if len(vote):
             points = int(vote[0].getText().replace(' points', ""))
             if points > 99:
                 hn.append({'title': title, 'link': href, 'votes': points})
-    return sort_stories_by_votes(hn)
+   
+   return sort_stories_by_votes(hn)
 
-pprint.pprint(create_custom_hn(mega_links, mega_subtext))
 
-# Step 2
-# loop thru index to enumerate (grabbing both link + subtext) into:
-# -> title (w/ just text); href (title link); points(votes w/ removing ' points')
-# idx used to make sure each result matches
-# vote = check subtext if there's score -> if len score True -> add to dict.
-# points >99 -> append to hackernews
-# pprint = nicer format spacing
+
+
