@@ -45,7 +45,3 @@ def create_custom_hn(links, subtext):
                 hn.append({'title': title, 'link': href, 'votes': points})
    
    return sort_stories_by_votes(hn)
-
-
-
-
